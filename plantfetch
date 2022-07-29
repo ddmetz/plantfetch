@@ -1,0 +1,99 @@
+#! /bin/sh
+# plantfetch
+
+# Packages
+if command -v pacman >/dev/null
+then
+    pkg="$(pacman -Qq | wc -l)"
+fi
+
+# Get user
+user="${USER-$(id -u -n)}"
+
+# Get host
+host="$(uname -n)"
+
+# Get OS
+. /etc/os-release
+os="$NAME"
+
+# Uptime
+IFS=. read -r s _ < /proc/uptime
+# Convert the uptime from seconds into days, hours and minutes.
+d=$((s / 60 / 60 / 24))
+h=$((s / 60 / 60 % 24))
+m=$((s / 60 % 60))
+# Only append days, hours and minutes if they're non-zero.
+case "$d" in ([!0]*) uptime="${uptime}${d}d "; esac
+case "$h" in ([!0]*) uptime="${uptime}${h}h "; esac
+case "$m" in ([!0]*) uptime="${uptime}${m}m "; esac
+
+# Shell
+shell="${SHELL##*/}"
+
+# Display protocol
+[ "$DISPLAY" ] && displayprot="x11"
+[ "$WAYLAND_DISPLAY" ] && displayprot="wayland"
+[ ! "$displayprot" ] && displayprot="tty"
+
+# Window Manager
+wm="$XDG_CURRENT_DESKTOP"
+[ "$wm" ] || wm="$DESKTOP_SESSION"
+
+[ ! "$wm" ] && [ "$DISPLAY" ] && command -v xprop >/dev/null && {
+    id=$(xprop -root -notype _NET_SUPPORTING_WM_CHECK)
+    id=${id##* }
+    wm=$(xprop -id "$id" -notype -len 100 -f _NET_WM_NAME 8t |
+        grep '^_NET_WM_NAME' | cut -d\" -f 2)
+}
+
+# Non-EWH WMs
+[ ! "$wm" ] || [ "$wm" = "non-EWH" ] &&
+    wm=$(
+        ps -e | grep -m 1 -o \
+            -e "sway" \
+            -e "kiwmi" \
+            -e "wayfire" \
+            -e "sowm" \
+            -e "catwm" \
+            -e "fvwm" \
+            -e "dwm" \
+            -e "2bwm" \
+            -e "monsterwm" \
+            -e "tinywm" \
+            -e "xmonad"
+    )
+
+[ ! "$wm" ] && wm="none"
+
+# Colors
+c0='[0m'
+c1='[31m'
+c2='[32m'
+c3='[33m'
+c4='[34m'
+c5='[35m'
+c6='[36m'
+c7='[37m'
+c8='[38m'
+c9='^[[37m'
+
+# Art
+artR1="${c1}  _ _    "
+artR2="${c1} (_\_)   "
+artR3="${c1}(__${c3}*${c1}__)  "
+artR4="${c1} (_/_)   "
+artR5="${c2} \ |     "
+artR6="${c2}  \|/    "
+
+# Print
+cat <<-EOF
+
+    ${artR1}  ${c1}host    •••   ${host}
+    ${artR2}  ${c3}user    •••   ${user}
+    ${artR3}  ${c2}shell   •••   ${shell}
+    ${artR4}  ${c6}wm      •••   ${wm}
+    ${artR5}  ${c4}uptime  •••   ${uptime}
+    ${artR6}  ${c5}pkg     •••   ${pkg}
+
+EOF
