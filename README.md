@@ -2,7 +2,7 @@
 A cute and minimal system information tool.
   
   
-![Alt text](/assests/preview.png?raw=true "Preview")
+![Alt text](/assets/preview.png?raw=true "Preview")
   
 This is my personal fetch, it is intended for use on Arch.
 
