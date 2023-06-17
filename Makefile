@@ -1,7 +1,7 @@
 PREFIX ?= /usr
 
 all:
-	@echo RUN \'make install\' to install plantfetch
+	@echo RUN \'make install\' to install plantfetch and flowerprint
 
 install:
 	@install -Dm755 plantfetch $(DESTDIR)$(PREFIX)/bin/plantfetch
